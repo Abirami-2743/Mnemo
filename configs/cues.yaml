@@ -1,0 +1,27 @@
+# Linguistic cue lexicon for the offline (no-LLM) extractor.
+# Patterns are case-insensitive regular expressions, checked in the order listed
+# (first match wins). The LLM extractor does not use this file.
+version: 1
+order: [retract, hypothetical, third_party, plan, temporary, change]
+patterns:
+  retract:
+    - '\b(forget|scratch that|gave up|give up|never said|anymore|no longer)\b'
+  hypothetical:
+    - '\b(if i|i wonder|i imagine|i sometimes imagine|would be like|someday|suppose)\b'
+  third_party:
+    - '\bmy (cousin|manager|friend|brother|sister|roommate|colleague|neighbour|neighbor|mother|father|boss|partner)\b'
+  plan:
+    - '\bin (?P<starts>\d+) days\b'
+    - '\b(next up|heads up|will start|i''ll start|i will start|starting in|travelling to)\b'
+  temporary:
+    - '\b(for (about )?(?P<dur>\d+)[- ]days?|next (?P<dur2>\d+) days|just for|visiting|short assignment|contract|trying)\b'
+  change:
+    - '\b(moved|relocated|switched|actually|now|for good|permanently|instead|new full-time|moved on|moved over)\b'
+duration:   # first match wins; anchored so a start offset ("in 9 days") is never read as a duration
+  - 'for (?:about |a )?(?P<d>\d+)[- ]days?'
+  - '(?P<d>\d+)-day'
+  - 'next (?P<d>\d+) days'
+starts_in: 'in (?P<s>\d+) days'
+confidence:
+  explicit: 0.9      # a lexicon pattern matched
+  default_state: 0.65  # plain statement with no marker

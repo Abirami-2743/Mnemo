@@ -1,0 +1,291 @@
+# MNEMO attribute catalog.
+#
+# Everything the benchmark generator, the heuristic extractor, the QA agent and
+# the UI know about "what can be remembered" lives here -- nothing about
+# attributes, values, importance or phrasing is hard-coded in Python.
+#
+# Template placeholders:  {v} value   {d} duration in days   {s} starts-in days
+# cardinality: single -> one current value (changes supersede it)
+#              multi  -> a set of values (new values are added, retractions remove one)
+# importance : prior probability mass of this attribute being asked about later;
+#              also used to weight memory-state quality (see docs/METHODOLOGY.md).
+version: 1
+
+chitchat:
+  - "Thanks, that helps!"
+  - "Can you explain how gradient descent works?"
+  - "What's a good way to structure a FastAPI project?"
+  - "Haha, fair enough."
+  - "Let's talk about something else."
+  - "Could you summarise that in two lines?"
+  - "Good morning!"
+  - "I'm not sure what to cook tonight."
+  - "What's the difference between a list and a tuple?"
+  - "That makes sense, thanks."
+  - "Interesting, tell me more."
+  - "Sorry, I got distracted for a second."
+  - "Can you recommend a good podcast about history?"
+  - "Remind me what we discussed earlier."
+  - "It's been a long week."
+  - "Do you think it will rain tomorrow?"
+  - "Okay, let me think about that."
+  - "Wow, that was quick."
+
+attributes:
+  location:
+    label: "city of residence"
+    cardinality: single
+    importance: 1.0
+    keywords: [live, lives, living, city, based, home, reside, located, moved]
+    values: [Chennai, Bangalore, Mumbai, Delhi, Hyderabad, Pune, Kochi, Coimbatore, Toronto, Berlin]
+    templates:
+      state:
+        - "I live in {v}."
+        - "I'm based in {v}."
+        - "My home city is {v}."
+      change:
+        - "I moved to {v} permanently."
+        - "I've relocated to {v} for good."
+        - "Actually, I live in {v} now."
+      temporary:
+        - "I'm visiting {v} for {d} days."
+        - "I'll be in {v} for about {d} days for work."
+        - "Spending the next {d} days in {v}."
+      plan:
+        - "I'm travelling to {v} in {s} days for {d} days."
+        - "Next up: a {d}-day trip to {v} starting in {s} days."
+      retract:
+        - "Please forget that I live in {v}."
+        - "Scratch that, I never said I live in {v}."
+      hypothetical:
+        - "If I lived in {v} I'd probably cycle more."
+        - "I sometimes imagine what life in {v} would be like."
+      third_party:
+        - "My cousin lives in {v}."
+        - "My manager is based in {v}."
+
+  employer:
+    label: "employer"
+    cardinality: single
+    importance: 1.0
+    keywords: [work, works, working, employer, job, company, employed, joined]
+    values: [Zoho, Infosys, Freshworks, Razorpay, Swiggy, Flipkart, Wipro, Atlassian, Stripe, Postman]
+    templates:
+      state:
+        - "I work at {v}."
+        - "I'm employed at {v}."
+        - "My employer is {v}."
+      change:
+        - "I switched jobs and now work at {v}."
+        - "I joined {v} as my new full-time employer."
+        - "Actually, I work at {v} now."
+      temporary:
+        - "I'm doing a {d}-day contract at {v}."
+        - "I'm on a short assignment at {v} for {d} days."
+      plan:
+        - "I'll start at {v} in {s} days for a {d}-day engagement."
+        - "Heads up: in {s} days I begin a {d}-day gig at {v}."
+      retract:
+        - "Please forget that I work at {v}."
+        - "Scratch that, I don't work at {v}."
+      hypothetical:
+        - "If I worked at {v} I'd probably have a longer commute."
+        - "I wonder what it would be like to work at {v}."
+      third_party:
+        - "My friend works at {v}."
+        - "My brother is employed at {v}."
+
+  preferred_language:
+    label: "preferred programming language"
+    cardinality: single
+    importance: 0.8
+    keywords: [language, code, coding, program, programming, prefer, preferred]
+    values: [Python, Java, Golang, Rust, TypeScript, Kotlin, Swift, Ruby]
+    templates:
+      state:
+        - "I mostly code in {v}."
+        - "My preferred language is {v}."
+      change:
+        - "I switched to {v} as my main language."
+        - "Actually, I prefer {v} now."
+        - "I've moved over to {v} for good."
+      temporary:
+        - "I'm using {v} for {d} days for a hackathon."
+        - "Just for the next {d} days I'll write everything in {v}."
+      plan:
+        - "I'll start building in {v} in {s} days for {d} days."
+      retract:
+        - "Forget that I prefer {v}."
+        - "Scratch that, {v} isn't my preferred language."
+      hypothetical:
+        - "If I used {v} I'd probably ship faster."
+        - "I imagine {v} would be fun to try someday."
+      third_party:
+        - "My colleague codes in {v}."
+        - "My roommate prefers {v}."
+
+  diet:
+    label: "diet"
+    cardinality: single
+    importance: 0.6
+    keywords: [diet, eat, eating, food, meal, meals]
+    values: [vegetarian, vegan, pescatarian, keto, paleo, flexitarian]
+    templates:
+      state:
+        - "I follow a {v} diet."
+        - "I'm {v}."
+      change:
+        - "I've switched to a {v} diet permanently."
+        - "Actually, I'm {v} now."
+      temporary:
+        - "I'm trying a {v} diet for {d} days."
+        - "For the next {d} days I'm eating {v}."
+      plan:
+        - "I'm starting a {v} diet in {s} days for {d} days."
+      retract:
+        - "Forget that I follow a {v} diet."
+        - "Scratch that, I'm not {v}."
+      hypothetical:
+        - "If I went {v} I'd probably cook more."
+        - "I imagine being {v} would be hard."
+      third_party:
+        - "My sister is {v}."
+        - "My roommate follows a {v} diet."
+
+  pet:
+    label: "pet"
+    cardinality: single
+    importance: 0.5
+    keywords: [pet, pets, animal]
+    values: [dog, cat, parrot, rabbit, hamster, turtle]
+    templates:
+      state:
+        - "I have a {v}."
+        - "I share my home with a {v}."
+      change:
+        - "Actually, my pet is a {v} now."
+        - "I now have a {v} instead, for good."
+      retract:
+        - "I don't have a {v} anymore."
+        - "Forget that I have a {v}."
+      hypothetical:
+        - "If I had a {v} I'd be home more."
+        - "I imagine a {v} would love my balcony."
+      third_party:
+        - "My neighbour has a {v}."
+        - "My friend owns a {v}."
+
+  commute_mode:
+    label: "commute mode"
+    cardinality: single
+    importance: 0.4
+    keywords: [commute, commuting, travel, transport, office]
+    values: [bike, metro, bus, car, scooter, train]
+    templates:
+      state:
+        - "I commute by {v}."
+        - "My daily commute is by {v}."
+      change:
+        - "I now commute by {v} for good."
+        - "Actually, I take the {v} to work these days."
+      temporary:
+        - "I'm commuting by {v} for {d} days."
+        - "For the next {d} days I'm taking the {v} to work."
+      retract:
+        - "Forget that I commute by {v}."
+        - "Scratch that, I don't commute by {v}."
+      hypothetical:
+        - "If I commuted by {v} I'd save an hour."
+        - "I imagine commuting by {v} would be nicer."
+      third_party:
+        - "My colleague commutes by {v}."
+        - "My brother takes the {v} to work."
+
+  phone_os:
+    label: "phone operating system"
+    cardinality: single
+    importance: 0.3
+    keywords: [phone, mobile, smartphone, os, runs]
+    values: [Android, iOS]
+    templates:
+      state:
+        - "I use an {v} phone."
+        - "My phone runs {v}."
+      change:
+        - "I switched to {v} for good."
+        - "Actually, my phone runs {v} now."
+      retract:
+        - "Forget that my phone runs {v}."
+        - "Scratch that, I don't use {v}."
+      hypothetical:
+        - "If I switched to {v} I'd miss my apps."
+        - "I imagine {v} would feel different."
+      third_party:
+        - "My friend uses {v}."
+        - "My sister's phone runs {v}."
+
+  favorite_cuisine:
+    label: "favourite cuisine"
+    cardinality: single
+    importance: 0.25
+    keywords: [cuisine, favourite, favorite, restaurant]
+    values: [Italian, Thai, Mexican, Korean, Lebanese, Ethiopian]
+    templates:
+      state:
+        - "My favourite cuisine is {v}."
+        - "I love {v} food."
+      change:
+        - "Actually, my favourite cuisine is {v} now."
+        - "I've moved on to {v} food as my favourite."
+      retract:
+        - "Forget that I love {v} food."
+        - "Scratch that, {v} isn't my favourite."
+      hypothetical:
+        - "If I could eat {v} food daily I'd be happy."
+        - "I imagine {v} food would be amazing right now."
+      third_party:
+        - "My friend loves {v} food."
+        - "My manager's favourite cuisine is {v}."
+
+  hobby:
+    label: "hobbies"
+    cardinality: multi
+    importance: 0.35
+    keywords: [hobby, hobbies, enjoy, free, spare]
+    values: [chess, painting, hiking, photography, gaming, cycling, reading, pottery]
+    templates:
+      state:
+        - "One of my hobbies is {v}."
+        - "I really enjoy {v}."
+      retract:
+        - "I gave up {v}."
+        - "Forget that I enjoy {v}."
+      hypothetical:
+        - "If I had time I'd take up {v}."
+        - "I imagine {v} would be relaxing."
+      third_party:
+        - "My friend is into {v}."
+        - "My brother enjoys {v}."
+
+  music_genre:
+    label: "favourite music genre"
+    cardinality: single
+    importance: 0.2
+    keywords: [music, genre, listen, listening, songs]
+    values: [jazz, techno, folk, metal, classical, hip-hop]
+    templates:
+      state:
+        - "I listen to a lot of {v}."
+        - "My go-to genre is {v}."
+      change:
+        - "Actually, my go-to genre is {v} now."
+        - "I've moved on to {v} for good."
+      retract:
+        - "Forget that I listen to {v}."
+        - "Scratch that, I'm not into {v}."
+      hypothetical:
+        - "If I played {v} at parties people would complain."
+        - "I imagine {v} would suit this mood."
+      third_party:
+        - "My roommate listens to {v}."
+        - "My sister loves {v}."

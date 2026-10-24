@@ -1,0 +1,151 @@
+# MNEMO default experiment configuration.
+# Every number that influences benchmark difficulty, the reward, training or
+# evaluation is declared here (and validated by mnemo.config.ExperimentConfig).
+# Change a value and re-run `make train evaluate`; nothing is baked into code.
+
+memory:
+  budget_tokens: 140          # hard token budget of the persistent memory
+  default_temp_ttl: 7         # days a "temporary" record lives if no duration was extracted
+  default_plan_start: 7       # days until a "plan" record becomes active if none was extracted
+  default_plan_duration: 7    # days a "plan" record stays valid if no duration was extracted
+  max_records_norm: 40        # normaliser for the record-count observation feature
+  history_depth: 1            # superseded values retained per attribute (most recent first)
+
+benchmark:
+  min_turns: 36
+  max_turns: 56
+  gap_days: [1, 6]            # days between consecutive user turns
+  temp_duration: [3, 14]
+  plan_start: [3, 20]
+  plan_duration: [3, 10]
+  attributes_per_episode: [6, 10]
+  checkpoint_every: 12        # probe questions are asked every N turns and at the end
+  probes_per_checkpoint: 8
+  confuser_value_prob: 0.15   # hypothetical / third-party claims reuse the user's real value
+  attribute_arrival_floor: 0.5  # sampling weight = floor + importance (keeps rare attrs appearing)
+  profiles:
+    balanced:
+      state_new: 0.24
+      state_repeat: 0.12
+      change: 0.14
+      temporary: 0.08
+      plan: 0.06
+      retract: 0.05
+      hypothetical: 0.08
+      third_party: 0.08
+      chitchat: 0.15
+    mover:
+      state_new: 0.18
+      state_repeat: 0.08
+      change: 0.24
+      temporary: 0.14
+      plan: 0.10
+      retract: 0.04
+      hypothetical: 0.06
+      third_party: 0.06
+      chitchat: 0.10
+    noisy:
+      state_new: 0.18
+      state_repeat: 0.10
+      change: 0.08
+      temporary: 0.05
+      plan: 0.04
+      retract: 0.04
+      hypothetical: 0.18
+      third_party: 0.18
+      chitchat: 0.15
+    sparse:
+      state_new: 0.12
+      state_repeat: 0.22
+      change: 0.06
+      temporary: 0.04
+      plan: 0.03
+      retract: 0.03
+      hypothetical: 0.06
+      third_party: 0.06
+      chitchat: 0.38
+    adversarial:
+      state_new: 0.14
+      state_repeat: 0.06
+      change: 0.10
+      temporary: 0.16
+      plan: 0.10
+      retract: 0.08
+      hypothetical: 0.14
+      third_party: 0.14
+      chitchat: 0.08
+  profile_weights:            # used for train / val / test splits
+    balanced: 0.40
+    mover: 0.25
+    noisy: 0.25
+    sparse: 0.10
+  ood_profile_weights:        # distribution-shifted split (unseen mixture, harder)
+    adversarial: 0.60
+    noisy: 0.40
+  splits:                     # disjoint episode-seed ranges [lo, hi)
+    train: [0, 1000000]
+    val: [1000000, 1000200]
+    test: [2000000, 2000500]
+    ood: [3000000, 3000300]
+
+# Simulated extractor noise. The extractor is the component that turns text into
+# (attribute, value, cue, confidence); real LLM extractors make mistakes, so the
+# policy must be trained against imperfect, confidence-annotated input.
+noise:
+  miss_rate: 0.03             # a real fact is not extracted at all
+  spurious_rate: 0.03         # chit-chat is mistaken for a fact
+  value_error_rate: 0.02      # right attribute and cue, wrong value
+  confusion:                  # true cue -> {predicted cue: probability}
+    state:        {change: 0.05, temporary: 0.02}
+    change:       {state: 0.10, temporary: 0.06}
+    temporary:    {change: 0.14, state: 0.08, plan: 0.04}
+    plan:         {temporary: 0.08, state: 0.06}
+    retract:      {state: 0.04}
+    hypothetical: {state: 0.16, plan: 0.06}
+    third_party:  {state: 0.16}
+  spurious_cues: {state: 0.70, temporary: 0.15, change: 0.15}
+  conf_correct: [8.0, 2.0]    # Beta(a, b) of reported confidence when the extraction is right
+  conf_wrong: [3.0, 3.0]      # Beta(a, b) when it is wrong (overlaps: confidence is informative, not perfect)
+
+reward:
+  history_weight: 0.25        # value of keeping the most recent superseded value
+  temporary_weight: 0.60      # value of a live temporary / planned record relative to a permanent one
+  stale_penalty: 1.0          # record that was true once (or is the wrong kind) but is not true now
+  junk_penalty: 1.0           # record that was never true (hypothetical / third-party / spurious)
+  duplicate_penalty: 0.5
+  token_cost: 0.05            # price of memory tokens (fraction of budget) per step of growth
+  qa_weight: 1.0              # terminal bonus: downstream probe accuracy at the final checkpoint
+
+ppo:
+  total_timesteps: 800000
+  n_envs: 8
+  n_steps: 256
+  batch_size: 256
+  n_epochs: 10
+  learning_rate: 0.0003
+  lr_final_fraction: 0.1      # linear decay down to this fraction of the initial rate
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+  net_arch: [128, 128]
+  validation_every: 40000     # timesteps between validation passes (best checkpoint is kept)
+  validation_episodes: 100
+  seeds: [0, 1, 2]
+  train_budgets: [80, 110, 140, 180, 240]   # budget randomised per training episode
+  noise_scale_range: [0.5, 1.5]            # extractor-noise multiplier randomised per episode
+
+evaluation:
+  test_episodes: 500
+  ood_episodes: 300
+  sweep_episodes: 200
+  noise_scales: [0.0, 0.5, 1.0, 1.5, 2.0]
+  budgets: [60, 100, 140, 200, 400]
+  bootstrap_samples: 2000
+  confidence_level: 0.95
+  rule_tuning:
+    episodes: 120
+    grid: [0.2, 0.35, 0.5, 0.65, 0.8, 0.9]
+    passes: 2
